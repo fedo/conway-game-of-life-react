@@ -1,4 +1,3 @@
-import { List } from 'immutable'
 
 const universe = {
   size: [10, 10],

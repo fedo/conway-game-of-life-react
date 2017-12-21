@@ -1,30 +1,31 @@
 import React, {Component} from 'react'
-import logo from './logo.svg'
 import './App.css'
 import {universe} from './game-of-life'
-import {map, range, reduce, unnest} from 'ramda'
+import {map, range, contains} from 'ramda'
 
-const getCellStyle = (x, y, width, height) => ({
-  display: "flex-cell"
-  // flex: `${(100/width)*100}%`
+const getCellStyle = (perc, alive) => ({
+  height: 0,
+  paddingBottom: `${perc}%`,
+  width: `${perc}%`,
+  border: "1px solid black",
+  margin: "-1px",
+  backgroundColor: alive && "#4CAF50"
 })
 
 class Cell extends Component {
   render() {
-    const [x, y] = this.props.position
-    const [width, height] = this.props.size
+    const {alive, position, size} = this.props
+    const [x, y] = position
+    const [width, height] = size
     const perc = 100 / width
     return (
       <div
         className={`Cell-${x}-${y}`}
-        style={{
-          height: 0,
-          paddingBottom: `${perc}%`,
-          width: `${perc}%`,
-          border: "1px solid black",
-          margin: "-1px",
-        }}>
+        style={getCellStyle(perc, alive)}>
         [{x}-{y}]
+        <div>
+          {alive ? "X" : "-"}
+        </div>
       </div>
     )
   }
@@ -34,7 +35,7 @@ const UniverseStyle = {
   display: "flex",
   flexFlow: "row wrap",
   width: "100%",
-  backgroundColor: "#EEEEEE"
+  backgroundColor: "#424242"
 }
 
 class Universe extends Component {
@@ -42,11 +43,11 @@ class Universe extends Component {
     const [width, height] = this.props.universe.size
     const {cells, size} = this.props.universe
     const allCells = map((x) => {
-      console.log(x)
       return map((y) => {
         return [x, y]
       }, range(0, height))
     }, range(0, width))
+
     return (
       <div className="Universe" style={UniverseStyle}>
         {
@@ -54,7 +55,13 @@ class Universe extends Component {
             return (
               <div class={`Row-${row}`} style={UniverseStyle}>
                 {row.map(([x, y]) => {
-                  return <Cell key={`${x}-${y}`} position={[x, y]} size={size}/>
+                  const alive = contains([x, y], cells)
+                  return <Cell
+                    key={`${x}-${y}`}
+                    position={[x, y]}
+                    size={size}
+                    alive={alive}
+                  />
                 })}
               </div>
             )
@@ -75,8 +82,7 @@ class App extends Component {
     return (
       <div className="App">
         <header className="App-header">
-          <img src={logo} className="App-logo" alt="logo"/>
-          <h1 className="App-title">Welcome to React</h1>
+          <h1 className="App-title">Game of Life</h1>
         </header>
         <div className="App-intro">
           <Universe universe={universe}/>
