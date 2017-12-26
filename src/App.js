@@ -1,7 +1,8 @@
 import React, {Component} from 'react'
 import './App.css'
-import {getNeighbours, universe} from './game-of-life'
+import {getNeighbours, universe, evolve, counterMap$} from './game-of-life'
 import {map, range, contains} from 'ramda'
+import { List } from 'immutable'
 
 const getCellStyle = (perc, alive) => ({
   height: 0,
@@ -14,7 +15,7 @@ const getCellStyle = (perc, alive) => ({
 
 class Cell extends Component {
   render() {
-    const {alive, position, size, neighbours} = this.props
+    const {alive, position, size, neighbours, counterMap} = this.props
     const [x, y] = position
     const [width, height] = size
     const perc = 100 / width
@@ -23,11 +24,7 @@ class Cell extends Component {
         key={`${x}-${y}`}
         className={`Cell-${x}-${y}`}
         style={getCellStyle(perc, alive)}>
-        {/*[{x}-{y}]*/}
-        <div>
-          <small>{neighbours.length}</small>
-          <div>{alive ? "X" : "-"}</div>
-        </div>
+        <div>{counterMap.get(List([x, y]))}</div>
       </div>
     )
   }
@@ -70,6 +67,7 @@ class Universe extends Component {
                     size={size}
                     alive={alive}
                     neighbours={getNeighbours([x, y], this.props.universe)}
+                    counterMap={counterMap$(this.props.universe)}
                   />
                 })}
               </div>

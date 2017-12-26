@@ -1,18 +1,11 @@
 import {range, reduce, equals} from 'ramda'
+import {List, Map} from 'immutable'
 
 const universe = {
   size: [10, 10],
   cells: [
-    [0, 0], [4, 4], [6, 6], [9, 9]
+    [0, 0], [0, 1], [1, 1], [4, 4], [6, 6], [9, 9]
   ]
-}
-
-const evolve = (universe) => {
-  const {size, cells} = universe
-  return {
-    size,
-    cells: []
-  }
 }
 
 const getNeighbours = (position, universe) => {
@@ -24,13 +17,9 @@ const getNeighbours = (position, universe) => {
   return reduce((acc, x) => {
     if (x >= 0 && x < width) {
       return reduce((acc2, y) => {
-        if (equals(position, [x, y])) {
-          return acc2
-        } else if (y >= 0 && y < height) {
-          return [...acc2, [x, y]]
-        } else {
-          return acc2
-        }
+        return (y >= 0 && y < height && !equals(position, [x, y]))
+          ? [...acc2, [x, y]]
+          : acc2
       }, acc, ys)
     } else {
       return acc
@@ -38,8 +27,31 @@ const getNeighbours = (position, universe) => {
   }, [], xs)
 }
 
+const counterMap$ = (universe) => {
+  const {size, cells} = universe
+  return cells.reduce((acc, position) => {
+    return getNeighbours(position, universe).reduce((acc, neighbourPosition) => {
+      return acc.update(List(neighbourPosition), (value) => (value || 0) + 1)
+    }, acc)
+  }, Map())
+}
+
+const evolve = (universe) => {
+  const {size, cells} = universe
+  const $counterMap = counterMap$(universe)
+  return {
+    size,
+    cells: $counterMap.reduce((acc, counter, $position) => {
+      return (counter > 1 && counter < 3)
+        ? [...acc, $position.toArray()]
+        : acc
+    })
+  }
+}
+
 export {
   evolve,
+  counterMap$,
   getNeighbours,
   universe
 }
