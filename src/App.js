@@ -1,6 +1,6 @@
 import React, {Component} from 'react'
 import './App.css'
-import {universe} from './game-of-life'
+import {getNeighbours, universe} from './game-of-life'
 import {map, range, contains} from 'ramda'
 
 const getCellStyle = (perc, alive) => ({
@@ -14,17 +14,19 @@ const getCellStyle = (perc, alive) => ({
 
 class Cell extends Component {
   render() {
-    const {alive, position, size} = this.props
+    const {alive, position, size, neighbours} = this.props
     const [x, y] = position
     const [width, height] = size
     const perc = 100 / width
     return (
       <div
+        key={`${x}-${y}`}
         className={`Cell-${x}-${y}`}
         style={getCellStyle(perc, alive)}>
-        [{x}-{y}]
+        {/*[{x}-{y}]*/}
         <div>
-          {alive ? "X" : "-"}
+          <small>{neighbours.length}</small>
+          <div>{alive ? "X" : "-"}</div>
         </div>
       </div>
     )
@@ -35,6 +37,8 @@ const UniverseStyle = {
   display: "flex",
   flexFlow: "row wrap",
   width: "100%",
+  maxWidth: "80vh",
+  maxHeight: "80wh",
   backgroundColor: "#424242"
 }
 
@@ -52,8 +56,12 @@ class Universe extends Component {
       <div className="Universe" style={UniverseStyle}>
         {
           allCells.map((row) => {
+            const rowId = "" + row[0][0]
             return (
-              <div class={`Row-${row}`} style={UniverseStyle}>
+              <div
+                key={rowId}
+                className={`Row-${rowId}`}
+                style={UniverseStyle}>
                 {row.map(([x, y]) => {
                   const alive = contains([x, y], cells)
                   return <Cell
@@ -61,6 +69,7 @@ class Universe extends Component {
                     position={[x, y]}
                     size={size}
                     alive={alive}
+                    neighbours={getNeighbours([x, y], this.props.universe)}
                   />
                 })}
               </div>
