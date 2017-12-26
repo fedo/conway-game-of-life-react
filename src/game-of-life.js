@@ -18,13 +18,13 @@ const getNeighbours = (position, universe) => {
     if (x >= 0 && x < width) {
       return reduce((acc2, y) => {
         return (y >= 0 && y < height && !equals(position, [x, y]))
-          ? [...acc2, [x, y]]
+          ? acc2.push([x, y])
           : acc2
       }, acc, ys)
     } else {
       return acc
     }
-  }, [], xs)
+  }, List(), xs)
 }
 
 const counterMap$ = (universe) => {
@@ -43,9 +43,9 @@ const evolve = (universe) => {
     size,
     cells: $counterMap.reduce((acc, counter, $position) => {
       return (counter > 1 && counter < 3)
-        ? [...acc, $position.toArray()]
+        ? acc.push($position.toArray())
         : acc
-    })
+    }, List()).toArray()
   }
 }
 

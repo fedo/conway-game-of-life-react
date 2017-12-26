@@ -2,7 +2,7 @@ import React, {Component} from 'react'
 import './App.css'
 import {getNeighbours, universe, evolve, counterMap$} from './game-of-life'
 import {map, range, contains} from 'ramda'
-import { List } from 'immutable'
+import {List} from 'immutable'
 
 const getCellStyle = (perc, alive) => ({
   height: 0,
@@ -24,7 +24,7 @@ class Cell extends Component {
         key={`${x}-${y}`}
         className={`Cell-${x}-${y}`}
         style={getCellStyle(perc, alive)}>
-        <div>{counterMap.get(List([x, y]))}</div>
+        {/*<div>{counterMap.get(List([x, y]))}</div>*/}
       </div>
     )
   }
@@ -67,7 +67,7 @@ class Universe extends Component {
                     size={size}
                     alive={alive}
                     neighbours={getNeighbours([x, y], this.props.universe)}
-                    counterMap={counterMap$(this.props.universe)}
+                    // counterMap={counterMap$(this.props.universe)}
                   />
                 })}
               </div>
@@ -82,7 +82,29 @@ class Universe extends Component {
 class App extends Component {
   constructor(props) {
     super(props)
-    this.state = {universe}
+    this.state = {
+      autoEvolveId: undefined,
+      universe
+    }
+  }
+
+  onClickEvolve = () => {
+    this.setState((state) => ({
+      ...state,
+      universe: evolve(state.universe)
+    }))
+  }
+
+  onToggleAutoEvolve = () => {
+    this.setState((state) => {
+      const {autoEvolveId} = state
+      return {
+        ...state,
+        autoEvolveId: autoEvolveId
+          ? clearInterval(autoEvolveId)
+          : setInterval(() => this.onClickEvolve(), 500)
+      }
+    })
   }
 
   render() {
@@ -92,8 +114,14 @@ class App extends Component {
           <h1 className="App-title">Game of Life</h1>
         </header>
         <div className="App-intro">
-          <Universe universe={universe}/>
+          <Universe universe={this.state.universe}/>
         </div>
+        {!this.state.autoEvolveId &&
+        <button onClick={this.onClickEvolve}>Evolve</button>
+        }
+        <button onClick={this.onToggleAutoEvolve}>
+          {this.state.autoEvolveId ? "Stop" : "Auto"}
+        </button>
       </div>
     )
   }
