@@ -1,5 +1,5 @@
 {
-  "name": "game-of-life",
+  "name": "conway-game-of-life-react",
   "version": "0.1.0",
   "private": true,
   "dependencies": {
