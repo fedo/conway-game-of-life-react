@@ -36,7 +36,9 @@ const UniverseStyle = {
   width: "100%",
   maxWidth: "80vh",
   maxHeight: "80wh",
-  backgroundColor: "#424242"
+  backgroundColor: "#424242",
+  border: "1px solid black",
+  margin: "0 auto"
 }
 
 class Universe extends Component {
@@ -110,9 +112,7 @@ class App extends Component {
   render() {
     return (
       <div className="App">
-        <header className="App-header">
-          <h1 className="App-title">Game of Life</h1>
-        </header>
+          <div className="App-title">Game of Life</div>
         <div className="App-intro">
           <Universe universe={this.state.universe}/>
         </div>
