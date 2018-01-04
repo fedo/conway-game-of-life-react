@@ -1,8 +1,10 @@
 import React, {Component} from 'react'
 import './App.css'
 import {getNeighbours, universe, evolve, counterMap$} from 'conway-game-of-life-js'
-import {map, range, contains} from 'ramda'
+import {map, range, contains, equals} from 'ramda'
 import {List} from 'immutable'
+
+const delay = 500
 
 const getCellStyle = (perc, alive) => ({
   height: 0,
@@ -10,10 +12,15 @@ const getCellStyle = (perc, alive) => ({
   width: `${perc}%`,
   border: "1px solid black",
   margin: "-1px",
-  backgroundColor: alive && "#4CAF50"
+  backgroundColor: alive && "#4CAF50",
+  transition: `all ${delay/4000}s ease-in-out`
 })
 
 class Cell extends Component {
+  shouldComponentUpdate = (nextProps, nextState) => {
+    return nextProps.alive !== this.props.alive
+  }
+
   render() {
     const {alive, position, size, neighbours, counterMap} = this.props
     const [x, y] = position
@@ -104,7 +111,7 @@ class App extends Component {
         ...state,
         autoEvolveId: autoEvolveId
           ? clearInterval(autoEvolveId)
-          : setInterval(() => this.onClickEvolve(), 500)
+          : setInterval(() => this.onClickEvolve(), delay)
       }
     })
   }
