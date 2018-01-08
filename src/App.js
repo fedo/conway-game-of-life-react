@@ -1,10 +1,11 @@
 import React, {Component} from 'react'
 import './App.css'
-import {getNeighbours, universe, evolve, counterMap$} from 'conway-game-of-life-js'
-import {map, range, contains, equals} from 'ramda'
-import {List} from 'immutable'
+import {evolve, getNeighbours, universe} from 'conway-game-of-life-js'
+import moment from 'moment'
+import {assocPath, contains, map, range} from 'ramda'
 
-const delay = 500
+const DELAY = 100
+const CYCLES = 1000
 
 const getCellStyle = (perc, alive) => ({
   height: 0,
@@ -13,7 +14,7 @@ const getCellStyle = (perc, alive) => ({
   border: "1px solid black",
   margin: "-1px",
   backgroundColor: alive && "#4CAF50",
-  transition: `all ${delay/4000}s ease-in-out`
+  transition: `all ${DELAY / 4000}s ease-in-out`
 })
 
 class Cell extends Component {
@@ -76,7 +77,6 @@ class Universe extends Component {
                     size={size}
                     alive={alive}
                     neighbours={getNeighbours([x, y], this.props.universe)}
-                    // counterMap={counterMap$(this.props.universe)}
                   />
                 })}
               </div>
@@ -93,7 +93,10 @@ class App extends Component {
     super(props)
     this.state = {
       autoEvolveId: undefined,
-      universe
+      universe,
+      benchmark: {
+        result: undefined
+      }
     }
   }
 
@@ -104,6 +107,17 @@ class App extends Component {
     }))
   }
 
+  onClickBenchmark = () => {
+    const start = moment()
+    for (let n = 0; n < CYCLES; n++) {
+      this.onClickEvolve()
+    }
+    this.setState((state) => {
+      const end = moment()
+      return assocPath(['benchmark', 'result'], end.diff(start, 'milliseconds'), state)
+    })
+  }
+
   onToggleAutoEvolve = () => {
     this.setState((state) => {
       const {autoEvolveId} = state
@@ -111,7 +125,7 @@ class App extends Component {
         ...state,
         autoEvolveId: autoEvolveId
           ? clearInterval(autoEvolveId)
-          : setInterval(() => this.onClickEvolve(), delay)
+          : setInterval(() => this.onClickEvolve(), DELAY)
       }
     })
   }
@@ -119,7 +133,7 @@ class App extends Component {
   render() {
     return (
       <div className="App">
-          <div className="App-title">Game of Life</div>
+        <div className="App-title">Game of Life</div>
         <div className="App-intro">
           <Universe universe={this.state.universe}/>
         </div>
@@ -129,6 +143,9 @@ class App extends Component {
         <button onClick={this.onToggleAutoEvolve}>
           {this.state.autoEvolveId ? "Stop" : "Auto"}
         </button>
+        <button onClick={this.onClickBenchmark}>Benchmark</button>
+        { this.state.benchmark.result
+        && <div>Result: {`${this.state.benchmark.result || ''}ms`}</div>}
       </div>
     )
   }
