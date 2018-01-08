@@ -4,7 +4,7 @@ import {evolve, getNeighbours, universe} from 'conway-game-of-life-js'
 import moment from 'moment'
 import {assocPath, contains, map, range} from 'ramda'
 
-const DELAY = 100
+const DELAY = 0
 const CYCLES = 1000
 
 const getCellStyle = (perc, alive) => ({
@@ -23,7 +23,7 @@ class Cell extends Component {
   }
 
   render() {
-    const {alive, position, size, neighbours, counterMap} = this.props
+    const {alive, position, size} = this.props
     const [x, y] = position
     const [width, height] = size
     const perc = 100 / width
@@ -32,7 +32,6 @@ class Cell extends Component {
         key={`${x}-${y}`}
         className={`Cell-${x}-${y}`}
         style={getCellStyle(perc, alive)}>
-        {/*<div>{counterMap.get(List([x, y]))}</div>*/}
       </div>
     )
   }
@@ -96,14 +95,17 @@ class App extends Component {
       universe,
       benchmark: {
         result: undefined
-      }
+      },
+      iterations: 0,
+      iterationsMessage: ''
     }
   }
 
   onClickEvolve = () => {
     this.setState((state) => ({
       ...state,
-      universe: evolve(state.universe)
+      universe: evolve(state.universe),
+      iterations: state.iterations + 1
     }))
   }
 
@@ -118,14 +120,24 @@ class App extends Component {
     })
   }
 
+  autoBenchmark = (state) => (
+    this.setState((state) => ({
+      ...state,
+      iterations: 0,
+      iterationsMessage: `${state.iterations} iterations/second`
+    })))
+
   onToggleAutoEvolve = () => {
     this.setState((state) => {
-      const {autoEvolveId} = state
+      const {autoEvolveId, benchmarkLoggerId} = state
       return {
         ...state,
         autoEvolveId: autoEvolveId
           ? clearInterval(autoEvolveId)
-          : setInterval(() => this.onClickEvolve(), DELAY)
+          : setInterval(() => this.onClickEvolve(), DELAY),
+        benchmarkLoggerId: benchmarkLoggerId
+          ? clearInterval(benchmarkLoggerId)
+          : setInterval(() => this.autoBenchmark(), 1000)
       }
     })
   }
@@ -143,8 +155,10 @@ class App extends Component {
         <button onClick={this.onToggleAutoEvolve}>
           {this.state.autoEvolveId ? "Stop" : "Auto"}
         </button>
+        {this.state.iterationsMessage
+        && <div>Result: {`${this.state.iterationsMessage || ''}`}</div>}
         <button onClick={this.onClickBenchmark}>Benchmark</button>
-        { this.state.benchmark.result
+        {this.state.benchmark.result
         && <div>Result: {`${this.state.benchmark.result || ''}ms`}</div>}
       </div>
     )
