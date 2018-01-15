@@ -1,6 +1,6 @@
 import React, {Component} from 'react'
 import './App.css'
-import {evolve, getNeighbours, universe} from 'conway-game-of-life-js'
+import {getNeighbours, GameOfLife} from 'conway-game-of-life-js'
 import moment from 'moment'
 import {assocPath, contains, map, range} from 'ramda'
 
@@ -90,7 +90,10 @@ class Universe extends Component {
 class App extends Component {
   constructor(props) {
     super(props)
-    this.state = {
+    const engine = new GameOfLife('JSFIDDLE')
+    const universe = engine.view(engine.create([15,15], {random: true}))
+    this.engine = engine
+      this.state = {
       autoEvolveId: undefined,
       universe,
       benchmark: {
@@ -101,10 +104,12 @@ class App extends Component {
     }
   }
 
+
   onClickEvolve = () => {
+    const { size, cells} = this.state.universe
     this.setState((state) => ({
       ...state,
-      universe: evolve(state.universe),
+      universe: this.engine.view(this.engine.evolve(this.engine.create(size, {cells}))),
       iterations: state.iterations + 1
     }))
   }
